@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      # This is set as an environment variable in the build project.
+      # This makes it easier to keep account ids out of the files.
+      - echo "AccountID=$ACCOUNTID"
+      - pip3 install --upgrade awscli
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-testing-image
+  build:
+    commands:
+      - echo Testing started on `date`.
+      # Testing is this simple, just run the pre-built container.
+      - docker run $REPOSITORY_URI:latest
+  post_build:
+    commands:
+      - echo Testing is completed on `date`
+artifacts:
+    files: 
+      - report.txt
+      

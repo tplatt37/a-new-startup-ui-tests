@@ -1,0 +1,79 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      # This is set as an environment variable in the build project.
+      # This makes it easier to keep account ids out of the files.
+      - echo "AccountID=$ACCOUNTID"
+      
+      # The Build Project must set Env var for the region...
+      - echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION"
+      
+      # Gotta be logged in so we can push.
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      
+      # Formulate the repo URI
+      - REPOSITORY_URI=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-testing-image
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      
+      # Install Trivy
+      - echo Install Trivy for security scanning of container image
+      - apt-get install wget apt-transport-https gnupg lsb-release
+      - wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add -
+      - echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | tee -a /etc/apt/sources.list.d/trivy.list
+      - apt-get update
+      - apt-get install trivy
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo "Building the Docker image..."
+      
+      # Formulate the base image name.  We pull it from our own private ECR repo to avoid throttling.
+      - BASE_IMAGE=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-test-base-image
+      
+      # Grab the ALB DNSName so we can point the testing code at the ALB in front of the application.
+      - DNSNAME=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='ALBDNS'].OutputValue" --output text`
+      - echo "Will test against $DNSNAME"
+      
+      # Now, let's build and tag
+      - docker build -t $REPOSITORY_URI:latest --build-arg URL_TO_TEST=http://$DNSNAME --build-arg BASE_IMAGE=$BASE_IMAGE .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      # After we build, lets run Trivy and look for security issues.
+      - echo Trivy is a comprehensive container scanner for os and package vulnerabilities
+      - echo Trivy will download vulnerability database every 12 hours and on initial run. 
+      
+      # NOTE: We're running this in a way that won't fail - even if issues are found.  This is for a DEMONSTRATION
+      # You would remove the --exit-code 0 option for real world usage.
+      - trivy -q image --exit-code 0 --severity HIGH,CRITICAL $REPOSITORY_URI:latest
+      - echo Build is completed on `date`
+      
+      # Push as latest - which kicks off pipeline, but also push as the specific tag.
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      
+      - echo Writing image definitions file...
+      # Once we have the container image built and pushed, there are multiple ways to deploy to ECS and other destinations.
+      # We generate metadata files for 2 of them for convenience.
+      #
+      # Use this imagedefinitions.json when deploying via CodePipeline Deploy with Action Provider of ECS (Standard deploy)
+      - printf '[{"name":"ui-tests-a-new-startup","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      #
+      # Use this when deploying via CloudFormation (This is simply the format to override parameters in a template)
+      - printf '{"Parameters":{"ImageURI":"%s"}}' $REPOSITORY_URI:$IMAGE_TAG > stackparams.json
+      #
+      
+      
+artifacts:
+    files: 
+      - imagedefinitions.json
+      - stackparams.json
