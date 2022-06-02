@@ -33,6 +33,9 @@ class TestTemplate(unittest.TestCase):
     def test_case_1(self):
         """Submit duplicate name and email for updates"""
         try:
+            
+            print("TEST URL=", os.environ['URL'])
+            
             self.driver.get(os.environ['URL'])
             
             # Click the "Sign up today" link and submit details.
@@ -85,6 +88,9 @@ class TestTemplate(unittest.TestCase):
     def test_case_2(self):
         """Submit unique email address for updates"""
         try:
+            
+            print("TEST URL=", os.environ['URL'])
+            
             self.driver.get(os.environ['URL'])
             
             # Click the "Sign up today" link and submit details.
