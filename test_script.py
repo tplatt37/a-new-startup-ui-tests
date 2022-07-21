@@ -10,6 +10,7 @@ import random
 import os
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
@@ -39,11 +40,11 @@ class TestTemplate(unittest.TestCase):
             self.driver.get(os.environ['URL'])
             
             # Click the "Sign up today" link and submit details.
-            el = self.driver.find_element_by_class_name('btn-success')
+            el = self.driver.find_element(By.CLASS_NAME, 'btn-success')
             el.click()
-            self.driver.find_element_by_id("name").send_keys("function test")
-            self.driver.find_element_by_name("email").send_keys("test@example.com")
-            el = self.driver.find_element_by_class_name('btn-primary')
+            self.driver.find_element(By.ID, 'name').send_keys("function test")
+            self.driver.find_element(By.NAME, 'email').send_keys("test@example.com")
+            el = self.driver.find_element(By.CLASS_NAME, 'btn-primary')
             el.click()
             
             print("Sleeping...wait 3 seconds for status to update.")
@@ -53,34 +54,30 @@ class TestTemplate(unittest.TestCase):
             # div becomes visible by clearing the style. 
             # We expect this to happen, and this tells us the post worked
             # and the database was checked successfully.
-            eld = self.driver.find_element_by_id("signupDuplicate")
+            eld = self.driver.find_element(By.ID, "signupDuplicate")
             if eld.get_attribute("style") != "display: none":
                 print("signupDuplicate is displayed")
             else:
                 print("signupDuplicate is not displayed")
                 
-            self.assertTrue(self.driver.find_element_by_id("signupDuplicate").get_attribute("style") != "display:none;")
+            self.assertTrue(self.driver.find_element(By.ID,"signupDuplicate").get_attribute("style") != "display:none;")
             
             
             # Sometimes, an error can happen, and if so, it will be displayed.
-            ele = self.driver.find_element_by_id("signupError")
+            ele = self.driver.find_element(By.ID, "signupError")
             if ele.get_attribute("style") != "display: none;":
                 print("signupError is displayed")
             else:
                 print("signupError is not displayed")
                 
-            self.assertFalse(self.driver.find_element_by_id("signupError").get_attribute("style") == "display:none;")
+            self.assertFalse(self.driver.find_element(By.ID,"signupError").get_attribute("style") == "display:none;")
             
             # If Sign up email was unique, this will be displayed with a success message.
-            els = self.driver.find_element_by_id("signupSuccess")
+            els = self.driver.find_element(By.ID,"signupSuccess")
             if els.get_attribute("style") != "display: none;":
                 print("signupSuccess is displayed")
             else:
                 print("signupSuccess is not displayed")
-            
-            #bodyText = self.driver.find_element_by_tag_name("body").text
-            #print(bodyText)
-            #Assert.assertTrue("Text not found!", bodyText.contains(text));
             
         except NoSuchElementException as ex:
             self.fail(ex.msg)
@@ -94,47 +91,47 @@ class TestTemplate(unittest.TestCase):
             self.driver.get(os.environ['URL'])
             
             # Click the "Sign up today" link and submit details.
-            el = self.driver.find_element_by_class_name('btn-success')
+            el = self.driver.find_element(By.CLASS_NAME,'btn-success')
             el.click()
-            self.driver.find_element_by_id("name").send_keys("function test")
+            self.driver.find_element(By.ID,"name").send_keys("function test")
           
             # Generate a random email address - should succeed most times. 
             letters = string.ascii_lowercase
             randomemail = "test" + ''.join(random.choice(letters) for i in range(6)) + "@example.com"
             print("Random Email=",randomemail)
-            self.driver.find_element_by_name("email").send_keys(randomemail)
+            self.driver.find_element(By.NAME,"email").send_keys(randomemail)
             
-            el = self.driver.find_element_by_class_name('btn-primary')
+            el = self.driver.find_element(By.CLASS_NAME,'btn-primary')
             el.click()
             
             print("Sleeping...wait 3 seconds for status to update.")
             time.sleep(3)
             
-            eld = self.driver.find_element_by_id("signupDuplicate")
+            eld = self.driver.find_element(By.ID,"signupDuplicate")
             if eld.get_attribute("style") != "display: none":
                 print("signupDuplicate is displayed")
             else:
                 print("signupDuplicate is not displayed")
             
             # Sometimes, an error can happen, and if so, it will be displayed.
-            ele = self.driver.find_element_by_id("signupError")
+            ele = self.driver.find_element(By.ID,"signupError")
             if ele.get_attribute("style") != "display: none;":
                 print("signupError is displayed")
             else:
                 print("signupError is not displayed")
                 
-            self.assertFalse(self.driver.find_element_by_id("signupError").get_attribute("style") == "display:none;")
+            self.assertFalse(self.driver.find_element(By.ID,"signupError").get_attribute("style") == "display:none;")
             
             
             # If Sign up email was unique, this will be displayed with a success message.
             # This is what we expect in this test case.
-            els = self.driver.find_element_by_id("signupSuccess")
+            els = self.driver.find_element(By.ID,"signupSuccess")
             if els.get_attribute("style") != "display: none;":
                 print("signupSuccess is displayed")
             else:
                 print("signupSuccess is not displayed")
                 
-            self.assertTrue(self.driver.find_element_by_id("signupSuccess").get_attribute("style") != "display:none;")
+            self.assertTrue(self.driver.find_element(By.ID,"signupSuccess").get_attribute("style") != "display:none;")
             
         except NoSuchElementException as ex:
             self.fail(ex.msg)
