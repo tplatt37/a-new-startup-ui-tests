@@ -53,7 +53,8 @@ phases:
       
       # NOTE: We're running this in a way that won't fail - even if issues are found.  This is for a DEMONSTRATION
       # You would remove the --exit-code 0 option for real world usage.
-      - trivy -q image --exit-code 0 --severity HIGH,CRITICAL $REPOSITORY_URI:latest
+      # Overriding default timeout due to sporadic scan failures (default is 5m)
+      - trivy -q image --exit-code 0 --timeout 15m --severity HIGH,CRITICAL $REPOSITORY_URI:latest
       - echo Build is completed on `date`
       
       # Push as latest - which kicks off pipeline, but also push as the specific tag.
