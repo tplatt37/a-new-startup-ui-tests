@@ -11,6 +11,7 @@ import os
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+import sys
 
 class TestTemplate(unittest.TestCase):
     """Include test cases on a given url"""
@@ -137,5 +138,16 @@ class TestTemplate(unittest.TestCase):
             self.fail(ex.msg)
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestTemplate)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    suite = unittest.TestSuite()
+    testloader = unittest.TestLoader()
+    testnames = testloader.getTestCaseNames(TestTemplate)
+    for name in testnames:
+        suite.addTest(TestTemplate(name))
+    runner = unittest.TextTestRunner(verbosity=2)
+    testResult=runner.run(suite)
+    print(testResult)
+    #
+    # We exit with non-0 if any tests failed.
+    # This will be the return code that "docker run" returns - so we can fail the build.
+    sys.exit(not testResult.wasSuccessful())
+    

@@ -15,10 +15,14 @@ phases:
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       - REPOSITORY_URI=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-testing-image
   build:
+    on-failure: ABORT
     commands:
       - echo Testing started on `date`.
       # Testing is this simple, just run the pre-built container.
+      # This will use the exit code from the Python script
+      # because we have on-failure set to ABORT - if this fails, it will fail the build
       - docker run $REPOSITORY_URI:latest
+      
   post_build:
     commands:
       - echo Testing is completed on `date`
