@@ -3,7 +3,8 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      docker: 18
+      # Assume we are using Ubuntu/7.0 codebuild image aka aws/codebuild/standard:7.0
+      python: 3.11
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
@@ -15,8 +16,9 @@ phases:
       # The Build Project must set Env var for the region...
       - echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION"
       
-      # Gotta be logged in so we can push.
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      # Must login to private repo 
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      #
       
       # Formulate the repo URI
       - REPOSITORY_URI=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-testing-image
