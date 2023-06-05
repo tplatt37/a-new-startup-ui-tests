@@ -10,9 +10,8 @@ phases:
       # This is set as an environment variable in the build project.
       # This makes it easier to keep account ids out of the files.
       - echo "AccountID=$ACCOUNTID"
-      - pip3 install --upgrade awscli
-      - echo Logging in to Amazon ECR...
       - aws --version
+      - echo Logging in to Amazon ECR...
       # Must login to private repo 
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       #
