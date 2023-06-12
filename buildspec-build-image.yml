@@ -1,14 +1,17 @@
 version: 0.2
 
+# Assume we are using Ubuntu/7.0 codebuild image aka aws/codebuild/standard:7.0
+
 phases:
-  install:
-    runtime-versions:
-      # Assume we are using Ubuntu/7.0 codebuild image aka aws/codebuild/standard:7.0
-      python: 3.11
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
       - aws --version
+      - docker --version
+      
+      # Which shell are we using?
+      - echo "Using shell..."
+      - ls -lha $(which sh) 
+      
       # This is set as an environment variable in the build project.
       # This makes it easier to keep account ids out of the files.
       - echo "AccountID=$ACCOUNTID"
@@ -17,6 +20,7 @@ phases:
       - echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION"
       
       # Must login to private repo 
+      - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       #
       
