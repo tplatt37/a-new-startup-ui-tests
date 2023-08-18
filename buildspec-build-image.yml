@@ -44,12 +44,20 @@ phases:
       # Formulate the base image name.  We pull it from our own private ECR repo to avoid throttling.
       - BASE_IMAGE=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-test-base-image
       
-      # Grab the ALB DNSName so we can point the testing code at the ALB in front of the application.
+      # Grab the ALB DNSName (or custom domain) so we can point the testing code at the ALB in front of the application.
       - DNSNAME=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='ALBDNS'].OutputValue" --output text`
-      - echo "Will test against $DNSNAME"
-      
+      # This is "None" unless a custom domain was specified.
+      - DOMAIN=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='Domain'].OutputValue" --output text`
+      - if ["$DOMAIN" != "None" ]; then
+      -   TESTURL="https://$DOMAIN"
+      - else
+      -   TESTURL="http://$DNSNAME"
+      - fi
+      - echo "Will test against $TESTURL"
+      - echo "TESTURL=$TESTURL"
+
       # Now, let's build and tag
-      - docker build -t $REPOSITORY_URI:latest --build-arg URL_TO_TEST=http://$DNSNAME --build-arg BASE_IMAGE=$BASE_IMAGE .
+      - docker build -t $REPOSITORY_URI:latest --build-arg URL_TO_TEST=$TESTURL --build-arg BASE_IMAGE=$BASE_IMAGE .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
