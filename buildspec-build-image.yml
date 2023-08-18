@@ -57,7 +57,7 @@ phases:
       - echo "DOMAIN=$DOMAIN"
 
       # if / then has to be a "one-liner" in buildspec...
-      - if ["$DOMAIN" != "None" ]; then TESTURL="$PROTOCOL://$DOMAIN"; else TESTURL="$PROTOCOL://$DNSNAME"; fi
+      - if [ "$DOMAIN" != "None" ]; then TESTURL="$PROTOCOL://$DOMAIN"; else TESTURL="$PROTOCOL://$DNSNAME"; fi
       - echo "Will test against $TESTURL"
       - echo "TESTURL=$TESTURL"
 
