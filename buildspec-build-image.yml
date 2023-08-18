@@ -43,15 +43,23 @@ phases:
       
       # Formulate the base image name.  We pull it from our own private ECR repo to avoid throttling.
       - BASE_IMAGE=$ACCOUNTID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/a-new-startup-test-base-image
+
+      # Which protocol? http or https?
+      - PROTOCOL=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='Protocol'].OutputValue" --output text`
+      - echo "PROTOCOL=$PROTOCOL"
       
       # Grab the ALB DNSName (or custom domain) so we can point the testing code at the ALB in front of the application.
       - DNSNAME=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='ALBDNS'].OutputValue" --output text`
+      - echo "DNSNAME=$DNSNAME"
+
       # This is "None" unless a custom domain was specified.
       - DOMAIN=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" --output text`
+      - echo "DOMAIN=$DOMAIN"
+
       - if ["$DOMAIN" != "None" ]; then
-      -   TESTURL="https://$DOMAIN"
+      -   TESTURL="$PROTOCOL://$DOMAIN"
       - else
-      -   TESTURL="http://$DNSNAME"
+      -   TESTURL="$PROTOCOL://$DNSNAME"
       - fi
       - echo "Will test against $TESTURL"
       - echo "TESTURL=$TESTURL"
