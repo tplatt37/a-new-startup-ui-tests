@@ -47,7 +47,7 @@ phases:
       # Grab the ALB DNSName (or custom domain) so we can point the testing code at the ALB in front of the application.
       - DNSNAME=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='ALBDNS'].OutputValue" --output text`
       # This is "None" unless a custom domain was specified.
-      - DOMAIN=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='Domain'].OutputValue" --output text`
+      - DOMAIN=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" --output text`
       - if ["$DOMAIN" != "None" ]; then
       -   TESTURL="https://$DOMAIN"
       - else
