@@ -56,11 +56,8 @@ phases:
       - DOMAIN=`aws cloudformation describe-stacks --stack-name a-new-startup-compute --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" --output text`
       - echo "DOMAIN=$DOMAIN"
 
-      - if ["$DOMAIN" != "None" ]; then
-      -   TESTURL="$PROTOCOL://$DOMAIN"
-      - else
-      -   TESTURL="$PROTOCOL://$DNSNAME"
-      - fi
+      # if / then has to be a "one-liner" in buildspec...
+      - if ["$DOMAIN" != "None" ]; then TESTURL="$PROTOCOL://$DOMAIN"; else TESTURL="$PROTOCOL://$DNSNAME"; fi
       - echo "Will test against $TESTURL"
       - echo "TESTURL=$TESTURL"
 
