@@ -3,12 +3,15 @@ ARG BASE_IMAGE=selenium/standalone-chrome
 FROM $BASE_IMAGE:latest
 ARG URL_TO_TEST
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 ENV URL=$URL_TO_TEST 
  
-RUN sudo apt-get update && sudo apt-get install python3-pip -y && pip install selenium
+RUN sudo apt-get update && sudo apt install python3.12-venv -y
+RUN python3 -m venv /app/venv 
+COPY requirements.txt . 
+RUN /app/venv/bin/pip install -r requirements.txt
 
 COPY . . 
 
-CMD [ "python3", "test_script.py" ]
+CMD [ "/app/venv/bin/python3", "test_script.py" ]
