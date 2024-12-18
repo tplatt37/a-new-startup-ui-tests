@@ -14,7 +14,10 @@ phases:
       
       # Which shell are we using?
       - echo "Using shell..."
-      - ls -lha $(which sh) 
+      - ls -lha $(which sh)
+      # What's the build environment public ip?
+      # (We need to be able to reach the LB in front of the web app by the way)
+      - curl checkip.amazonaws.com  
       
       - echo Logging in to Amazon ECR...
       # Must login to private repo 
